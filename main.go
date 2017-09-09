@@ -1,60 +1,58 @@
 package main
 
 import (
-	"crypto/tls"
 	"log"
-	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/cloudfoundry-community/go-cfclient"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	"github.com/palantir/stacktrace"
-	"github.com/parnurzeal/gorequest"
 )
 
+// global variables
 var cfClient *cfclient.Client
+var cfAPI string
+var cfUser string
+var cfPassword string
+var cfSkipSsl bool
 
-//AppUsage array of orgs usage
-type AppUsage struct {
-	Orgs []OrgAppUsage `json:"orgs"`
-}
-
-//OrgAppUsage Single org usage
-type OrgAppUsage struct {
-	OrganizationGUID string    `json:"organization_guid"`
-	OrgName          string    `json:"organization_name"`
-	PeriodStart      time.Time `json:"period_start"`
-	PeriodEnd        time.Time `json:"period_end"`
-	AppUsages        []struct {
-		SpaceGUID             string `json:"space_guid"`
-		SpaceName             string `json:"space_name"`
-		AppName               string `json:"app_name"`
-		AppGUID               string `json:"app_guid"`
-		InstanceCount         int    `json:"instance_count"`
-		MemoryInMbPerInstance int    `json:"memory_in_mb_per_instance"`
-		DurationInSeconds     int    `json:"duration_in_seconds"`
-	} `json:"app_usages"`
-}
-
+// Main start point for the app
 func main() {
+	// save environment variables
+	cfAPI = os.Getenv("CF_API")
+	cfUser = os.Getenv("CF_USERNAME")
+	cfPassword = os.Getenv("CF_PASSWORD")
+	cfSkipSsl = os.Getenv("CF_SKIP_SSL_VALIDATION") == "true"
+
+	// make sure no env variable is empty
 	if os.Getenv("BASIC_USERNAME") == "" &&
 		os.Getenv("BASIC_PASSWORD") == "" &&
-		os.Getenv("CF_API") == "" &&
-		os.Getenv("CF_USERNAME") == "" &&
-		os.Getenv("CF_PASSWORD") == "" {
+		cfAPI == "" &&
+		cfUser == "" &&
+		cfPassword == "" {
 		log.Fatalf("Must set environment variables BASIC_USERNAME, BASIC_PASSWORD, CF_API, CF_USERNAME, CF_PASSWORD")
 		return
 	}
+
+	// log into PCF when the app starts - if the apptio auditor user changes,
+	//   make sure the restart the app
 	_, err := SetupCfClient()
 	if err != nil {
 		log.Fatalf("Error setting up client %v", err)
 		return
 	}
+
+	// create a router
 	e := echo.New()
+
+	// register xxx-usage/YYYY/MM endpoints
 	e.GET("/app-usage/:year/:month", AppUsageReport)
+	e.GET("/service-usage/:year/:month", ServiceUsageReport)
+	e.GET("/task-usage/:year/:month", TaskUsageReport)
+
+	// confirm basic auth
 	userBasic := os.Getenv("BASIC_USERNAME")
 	passwordBasic := os.Getenv("BASIC_PASSWORD")
 	e.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
@@ -66,94 +64,24 @@ func main() {
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
-// SetupCfClient logs into PCF
+// SetupCfClient logs the Apptio Auditor user into PCF
 func SetupCfClient() (*cfclient.Client, error) {
-	cfAPI := os.Getenv("CF_API")
-	cfUser := os.Getenv("CF_USERNAME")
-	cfPassword := os.Getenv("CF_PASSWORD")
-	cfSkipSsl := os.Getenv("CF_SKIP_SSL_VALIDATION") == "true"
 
+	// setup the login data
 	c := &cfclient.Config{
 		ApiAddress:        cfAPI,
 		Username:          cfUser,
 		Password:          cfPassword,
 		SkipSslValidation: cfSkipSsl,
 	}
+
+	// login
 	client, err := cfclient.NewClient(c)
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "Error creating cf client")
 	}
 	cfClient = client
 	return client, nil
-}
-
-// AppUsageReport handles the app-usage call validating the date
-//  and executing the report creation
-func AppUsageReport(c echo.Context) error {
-	year, err := strconv.Atoi(c.Param("year"))
-	if err != nil {
-		return stacktrace.Propagate(err, "couldn't convert year to number")
-	}
-	month, err := strconv.Atoi(c.Param("month"))
-	if err != nil {
-		return stacktrace.Propagate(err, "couldn't convert month to number")
-	}
-	usageReport, err := GetAppUsageReport(cfClient, year, month)
-
-	if err != nil {
-		return stacktrace.Propagate(err, "Couldn't get usage report")
-	}
-	return c.JSON(http.StatusOK, usageReport)
-}
-
-// GetAppUsageReport pulls the entire report together
-func GetAppUsageReport(client *cfclient.Client, year int, month int) (*AppUsage, error) {
-	if month > 12 || month < 1 {
-		return nil, stacktrace.NewError("Month must be between 1-12")
-	}
-
-	orgs, err := client.ListOrgs()
-	if err != nil {
-		return nil, stacktrace.Propagate(err, "Failed getting list of orgs using client: %v", client)
-	}
-	//fmt.Println("Org count", len(orgs))
-
-	report := AppUsage{}
-	token, err := client.GetToken()
-	if err != nil {
-		return nil, stacktrace.Propagate(err, "Failed getting token using client: %v", client)
-	}
-
-	// loop through orgs and get app usage report for each
-	for _, org := range orgs {
-		orgUsage, err := GetAppUsageForOrg(token, org, year, month)
-		if err != nil {
-			return nil, stacktrace.Propagate(err, "Failed getting app usage for org: "+org.Name)
-		}
-		orgUsage.OrgName = org.Name
-		report.Orgs = append(report.Orgs, *orgUsage)
-	}
-
-	return &report, nil
-}
-
-// GetAppUsageForOrg queries apps manager app_usages API for the orgs app usage information
-func GetAppUsageForOrg(token string, org cfclient.Org, year int, month int) (*OrgAppUsage, error) {
-	usageAPI := os.Getenv("CF_USAGE_API")
-	cfSkipSsl := os.Getenv("CF_SKIP_SSL_VALIDATION") == "true"
-	target := &OrgAppUsage{}
-	request := gorequest.New()
-	resp, _, err := request.Get(usageAPI+"/organizations/"+org.Guid+"/app_usages?"+GenTimeParams(year, month)).
-		Set("Authorization", token).TLSClientConfig(&tls.Config{InsecureSkipVerify: cfSkipSsl}).
-		EndStruct(&target)
-	if err != nil {
-		return nil, stacktrace.Propagate(err[0], "Failed to get app usage report %v", org)
-	}
-
-	if resp.StatusCode != 200 {
-		return nil, stacktrace.NewError("Failed getting app usage report %v", resp)
-	}
-	return target, nil
 }
 
 // GenTimeParams generates the from and to dates for the app_usages call to apps manager
