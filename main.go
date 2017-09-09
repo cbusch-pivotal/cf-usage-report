@@ -114,14 +114,17 @@ func GetAppUsageReport(client *cfclient.Client, year int, month int) (*AppUsage,
 
 	orgs, err := client.ListOrgs()
 	if err != nil {
-		return nil, stacktrace.Propagate(err, "Failed getting list of apps using client: %v", client)
+		return nil, stacktrace.Propagate(err, "Failed getting list of orgs using client: %v", client)
 	}
+	//fmt.Println("Org count", len(orgs))
 
 	report := AppUsage{}
 	token, err := client.GetToken()
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "Failed getting token using client: %v", client)
 	}
+
+	// loop through orgs and get app usage report for each
 	for _, org := range orgs {
 		orgUsage, err := GetAppUsageForOrg(token, org, year, month)
 		if err != nil {
