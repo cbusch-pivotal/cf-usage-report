@@ -1,0 +1,12 @@
+applications:
+- name: cf-usage-report
+  buildpack: go_buildpack
+env:
+  CF_USAGE_API: https://app-usage.system.mypcf.net
+  CF_API: https://api.system.mypcf.net
+  CF_SKIP_SSL_VALIDATION: true
+  CF_USERNAME: apptio-pcf-auditor
+  CF_PASSWORD: Appt10intX17
+  BASIC_USERNAME: basic
+  BASIC_PASSWORD: basic
+  GOPACKAGENAME: github.com/cbusch-pivotal/cf-usage-report
