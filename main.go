@@ -66,14 +66,15 @@ func main() {
 	e.Logger.Fatal(e.Start(":8080"))
 }
 
+// SetupCfClient logs into PCF
 func SetupCfClient() (*cfclient.Client, error) {
-	cfApi := os.Getenv("CF_API")
+	cfAPI := os.Getenv("CF_API")
 	cfUser := os.Getenv("CF_USERNAME")
 	cfPassword := os.Getenv("CF_PASSWORD")
 	cfSkipSsl := os.Getenv("CF_SKIP_SSL_VALIDATION") == "true"
 
 	c := &cfclient.Config{
-		ApiAddress:        cfApi,
+		ApiAddress:        cfAPI,
 		Username:          cfUser,
 		Password:          cfPassword,
 		SkipSslValidation: cfSkipSsl,
@@ -133,12 +134,13 @@ func GetAppUsageReport(client *cfclient.Client, year int, month int) (*AppUsage,
 	return &report, nil
 }
 
+// GetAppUsageForOrg queries apps manager app_usages API for the orgs app usage information
 func GetAppUsageForOrg(token string, org cfclient.Org, year int, month int) (*OrgAppUsage, error) {
-	usageApi := os.Getenv("CF_USAGE_API")
+	usageAPI := os.Getenv("CF_USAGE_API")
 	cfSkipSsl := os.Getenv("CF_SKIP_SSL_VALIDATION") == "true"
 	target := &OrgAppUsage{}
 	request := gorequest.New()
-	resp, _, err := request.Get(usageApi+"/organizations/"+org.Guid+"/app_usages?"+GenTimeParams(year, month)).
+	resp, _, err := request.Get(usageAPI+"/organizations/"+org.Guid+"/app_usages?"+GenTimeParams(year, month)).
 		Set("Authorization", token).TLSClientConfig(&tls.Config{InsecureSkipVerify: cfSkipSsl}).
 		EndStruct(&target)
 	if err != nil {
@@ -151,6 +153,7 @@ func GetAppUsageForOrg(token string, org cfclient.Org, year int, month int) (*Or
 	return target, nil
 }
 
+// GenTimeParams generates the from and to dates for the app_usages call to apps manager
 func GenTimeParams(year int, month int) string {
 	formatString := "2006-01-02"
 	firstDay := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
