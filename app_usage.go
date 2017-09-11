@@ -60,6 +60,7 @@ func GetAppUsageReport(client *cfclient.Client, year int, month int) (*AppUsage,
 		return nil, stacktrace.NewError("Month must be between 1-12")
 	}
 
+	// get a list of orgs within the foundation
 	orgs, err := client.ListOrgs()
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "Failed getting list of orgs using client: %v", client)
@@ -87,7 +88,6 @@ func GetAppUsageReport(client *cfclient.Client, year int, month int) (*AppUsage,
 // GetAppUsageForOrg queries apps manager app_usages API for the orgs app usage information
 func GetAppUsageForOrg(token string, org cfclient.Org, year int, month int) (*OrgAppUsage, error) {
 	usageAPI := os.Getenv("CF_USAGE_API")
-	// cfSkipSsl := os.Getenv("CF_SKIP_SSL_VALIDATION") == "true"
 	target := &OrgAppUsage{}
 	request := gorequest.New()
 	resp, _, err := request.Get(usageAPI+"/organizations/"+org.Guid+"/app_usages?"+GenTimeParams(year, month)).
