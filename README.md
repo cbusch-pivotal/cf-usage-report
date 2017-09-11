@@ -1,5 +1,5 @@
 # cf-usage-report
-App to easily provide app, service, or task usage reports from a cloud foundry foundation
+Service deployed to a cloud foundry foundation to easily provide app, service, or task usage reports for all orgs and spaces within the foundation.
 
 ##  Setup
 ### Apptio Auditor User
