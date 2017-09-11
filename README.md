@@ -80,20 +80,53 @@ env:
 
 ## Service Installation
 ### Build
-To build the apptio-usage-service executable to deploy to PCF, use the following command.
-GOOS=linux GOARCH=amd64 go build
+There is no need to build the go project prior to pushing to Cloud Foundry. The go_buildpack will build the go executable as a Linux executable with all needed dependencies.
+
+`GOOS=linux GOARCH=amd64 go build`
+
 ### Push
 Push the executable to PCF with the following command while logged into PCF as a system administrator capable of adding applications to the system org, apptio space.
-cf push -p apptio-usage-service
+
+`cf push`
+
 ### Testing
-To test if the service is installed correctly, run the following command.
-curl http://basic:basic@apptio-usage-service.apps.mypcf.net/app-usage/2017/08
+To test if the service is installed correctly, run the following `curl` commands.
+
+__app-usage__
+```
+curl http://basic:basic@apptio-usage-service.apps.mypcf.net/app-usage/2017/08 > app-usage.json
+```
 
 To further verify the service output, the following command can be run for each org in the foundation and compared. First log in as a user who can access audit information in each org.
 ```
 curl "https://app-usage.system.mypcf.net/organizations/`cf org <ORG_NAME> \
 --guid`/app_usages?start=2017-08-01&end=2017-08-31" -k -v -H \
-"authorization: `cf oauth-token`" > org_output.json
+"authorization: `cf oauth-token`" > app_usages.json
+```
+
+__service-usage__
+```
+curl http://basic:basic@apptio-usage-service.apps.mypcf.net/service-usage/2017/08 > service-usage.json
+```
+
+To further verify the service output, the following command can be run for each org in the foundation and compared. First log in as a user who can access audit information in each org.
+```
+curl "https://app-usage.system.mypcf.net/organizations/`cf org <ORG_NAME> \
+--guid`/service_usages?start=2017-08-01&end=2017-08-31" -k -v -H \
+"authorization: `cf oauth-token`" > service_usages.json
+```
+
+__task-usage__
+```
+curl http://basic:basic@apptio-usage-service.apps.mypcf.net/task-usage/2017/08 > task-usage.json
+```
+
+To further verify the service output, the following command can be run for each org in the foundation and compared. First log in as a user who can access audit information in each org.
+```
+curl "https://app-usage.system.mypcf.net/organizations/`cf org <ORG_NAME> \
+--guid`/task_usages?start=2017-08-01&end=2017-08-31" -k -v -H \
+"authorization: `cf oauth-token`" > task_usages.json
 ```
 
 ## Using the Service from Apptio
+TBD -> work on Apptio DataLink calls to the `cf-usage-report` service
