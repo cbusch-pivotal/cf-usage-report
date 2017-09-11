@@ -27,12 +27,11 @@ Create the Apptio auditor user.
 uaac user add $AUDIT_USER -p $AUDIT_PWD --emails $AUDIT_EMAIL
 ```
 
-Final, give the Apptio auditor the proper permissions.
+Final, give the Apptio auditor the proper scopes: `usage_service.audit` (definitely) and `cloud_controller.auditor` (maybe, but give it a try).
 ```
-uaac member add cloud_controller.admin_read_only $AUDIT_USER
+uaac member add cloud_controller.auditor $AUDIT_USER
+uaac member add usage_service.audit $AUDIT_USER
 ```
-
-__NOTE__: At the moment, the app_usage Apps Manager service is recognizing the `cloud_controller.admin_read_only` permission, so the `cloud_controller.admin` must be used until it is fixed.
 
 ## Org and Space for Service
 Since this is a system related app, it should be pushed into the system org. As a user with system administrator privileges, create an apptio space. This will be the location to which the application will be “pushed” later in this document.
@@ -40,7 +39,7 @@ Since this is a system related app, it should be pushed into the system org. As 
 ## Apptio Usage Service (the app)
 The Apptio Usage Service application was written by the Pivotal Cloud Foundry Services team specifically for customers. It is written in golang making it fast and easy to update.
 
-This service returns the application usage information for all applications, in all spaces of all orgs with the foundation for a specific month to date. For example, calling the service on August 23, 2017 with the value URL `http://apptio-usage-service.<app-domain>/app-usage/2017/08`, which is August 2017, will provide all app information for August 1st through August 23rd at the time it was called. Apps Manager updates monthly information roughly each hour of the day.
+This service returns the application usage information for all applications, in all spaces of all orgs with the foundation for a specific month to date. For example, calling the service on August 23, 2017 with the value URL `http://cf-usage-report.<app-domain>/app-usage/2017/08`, which is August 2017, will provide all app information for August 1st through August 23rd at the time it was called. Apps Manager updates monthly information roughly each hour of the day.
 
 Apptio Usage performs roughly the following function, adding to the normal output of the Apps Manager app_usage endpoint.
 
@@ -60,12 +59,12 @@ Change the “system-domain” per the foundation in which the app is being depl
 
 Change the `CF_USERNAME` and `CF_PASSWORD` to make the Apptio Auditor credentials.
 
-Finally, the `BASIC_USERNAME` and `BASIC_PASSWORD` variables can be changed to basic authentication used in the Apptio DataLink call to the service. For example: `http://basic:basic@apptio-usage-service.apps.mypcf.net/app-usage/2017/08`
+Finally, the `BASIC_USERNAME` and `BASIC_PASSWORD` variables can be changed to basic authentication used in the Apptio DataLink call to the service. For example: `http://basic:basic@cf-usage-report.apps.mypcf.net/app-usage/2017/08`
 
 ### File contents for manifest.yml
 ```
 applications:
-- name: apptio-usage-service
+- name: cf-usage-report
   buildpack: go_buildpack
 env:
   CF_USAGE_API: https://app-usage.<SYSTEM-DOMAIN>
@@ -75,7 +74,7 @@ env:
   CF_PASSWORD: Appt10intX17
   BASIC_USERNAME: basic
   BASIC_PASSWORD: basic
-  GOPACKAGENAME: github.com/pivotalservices/apptio-usage-service
+  GOPACKAGENAME: github.com/pivotalservices/cf-usage-report
 ```
 
 ## Service Installation
@@ -94,7 +93,7 @@ To test if the service is installed correctly, run the following `curl` commands
 
 __app-usage__
 ```
-curl http://basic:basic@apptio-usage-service.apps.mypcf.net/app-usage/2017/08 > app-usage.json
+curl http://basic:basic@cf-usage-report.apps.mypcf.net/app-usage/2017/08 > app-usage.json
 ```
 
 To further verify the service output, the following command can be run for each org in the foundation and compared. First log in as a user who can access audit information in each org.
@@ -106,7 +105,7 @@ curl "https://app-usage.system.mypcf.net/organizations/`cf org <ORG_NAME> \
 
 __service-usage__
 ```
-curl http://basic:basic@apptio-usage-service.apps.mypcf.net/service-usage/2017/08 > service-usage.json
+curl http://basic:basic@cf-usage-report.apps.mypcf.net/service-usage/2017/08 > service-usage.json
 ```
 
 To further verify the service output, the following command can be run for each org in the foundation and compared. First log in as a user who can access audit information in each org.
@@ -118,7 +117,7 @@ curl "https://app-usage.system.mypcf.net/organizations/`cf org <ORG_NAME> \
 
 __task-usage__
 ```
-curl http://basic:basic@apptio-usage-service.apps.mypcf.net/task-usage/2017/08 > task-usage.json
+curl http://basic:basic@cf-usage-report.apps.mypcf.net/task-usage/2017/08 > task-usage.json
 ```
 
 To further verify the service output, the following command can be run for each org in the foundation and compared. First log in as a user who can access audit information in each org.
