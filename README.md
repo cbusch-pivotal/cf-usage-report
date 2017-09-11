@@ -3,13 +3,13 @@ Service deployed to a cloud foundry foundation to easily provide app, service, o
 
 ##  Setup
 ### Apptio Auditor User
-Apptio auditor user is necessary for the application (service) to log into the necessary app_usage endpoint, part of Apps Manager. From the command line UAA utility, uaac, create the following user. The Apptio Auditor user must be created in each PCF foundation to be audited, i.e. SandPaaS, DevPaaS, STLPaaS, KSCPaaS, and BELPaaS. Cloud PaaS’s will need added once they come on line. An email should be setup for the user, but is not needed.
+Apptio auditor user is necessary for the application (service) to log into the necessary app_usage endpoint, part of Apps Manager. From the command line UAA utility, uaac, create the following user. The Apptio Auditor user must be created in each PCF foundation to be audited, i.e. SandPaaS, DevPaaS, STLPaaS, KSCPaaS, and EUROPaaS. Cloud PaaS’s will need added once they come on line. An email should be setup for the user, but is not needed.
 
 ### Audit user information
 ```
 AUDIT_USER="apptio-pcf-auditor"
 AUDIT_PWD="Appt10intX17"
-AUDIT_EMAIL="apptiopcf@mastercard.com"
+AUDIT_EMAIL="apptiopcf@customer.com"
 ```
 ### UAAC Script
 Set target environment in which to create users.
@@ -32,13 +32,13 @@ Final, give the Apptio auditor the proper permissions.
 uaac member add cloud_controller.admin_read_only $AUDIT_USER
 ```
 
-__NOTE__: At the moment, the app_usage Apps Manager service is recognizing the “cloud_controller.admin_read_only” permission, so the “cloud_controller.admin” must be used until it is fixed.
+__NOTE__: At the moment, the app_usage Apps Manager service is recognizing the `cloud_controller.admin_read_only` permission, so the `cloud_controller.admin` must be used until it is fixed.
 
 ## Org and Space for Service
 Since this is a system related app, it should be pushed into the system org. As a user with system administrator privileges, create an apptio space. This will be the location to which the application will be “pushed” later in this document.
 
 ## Apptio Usage Service (the app)
-The Apptio Usage Service application was written by the Pivotal Cloud Foundry Services team specifically for Mastercard. It is written in golang making it fast and easy to update.
+The Apptio Usage Service application was written by the Pivotal Cloud Foundry Services team specifically for customers. It is written in golang making it fast and easy to update.
 
 This service returns the application usage information for all applications, in all spaces of all orgs with the foundation for a specific month to date. For example, calling the service on August 23, 2017 with the value URL `http://apptio-usage-service.<app-domain>/app-usage/2017/08`, which is August 2017, will provide all app information for August 1st through August 23rd at the time it was called. Apps Manager updates monthly information roughly each hour of the day.
 
