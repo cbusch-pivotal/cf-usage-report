@@ -54,7 +54,7 @@ func TaskUsageReport(c echo.Context) error {
 	usageReport, err := GetTaskUsageReport(cfClient, year, month)
 
 	if err != nil {
-		return stacktrace.Propagate(err, "Couldn't get service usage report")
+		return stacktrace.Propagate(err, "Couldn't get task usage report")
 	}
 	return c.JSON(http.StatusOK, usageReport)
 }
@@ -81,7 +81,7 @@ func GetTaskUsageReport(client *cfclient.Client, year int, month int) (*TaskUsag
 	for _, org := range orgs {
 		orgUsage, err := GetTaskUsageForOrg(token, org, year, month)
 		if err != nil {
-			return nil, stacktrace.Propagate(err, "Failed getting service usage for org: "+org.Name)
+			return nil, stacktrace.Propagate(err, "Failed getting task usage for org: "+org.Name)
 		}
 		orgUsage.OrgName = org.Name
 		report.Orgs = append(report.Orgs, *orgUsage)
@@ -95,15 +95,15 @@ func GetTaskUsageForOrg(token string, org cfclient.Org, year int, month int) (*O
 	usageAPI := os.Getenv("CF_USAGE_API")
 	target := &OrgTaskUsage{}
 	request := gorequest.New()
-	resp, _, err := request.Get(usageAPI+"/organizations/"+org.Guid+"/app_usages?"+GenTimeParams(year, month)).
+	resp, _, err := request.Get(usageAPI+"/organizations/"+org.Guid+"/task_usages?"+GenTimeParams(year, month)).
 		Set("Authorization", token).TLSClientConfig(&tls.Config{InsecureSkipVerify: cfSkipSsl}).
 		EndStruct(&target)
 	if err != nil {
-		return nil, stacktrace.Propagate(err[0], "Failed to get service usage report %v", org)
+		return nil, stacktrace.Propagate(err[0], "Failed to get task usage report %v", org)
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, stacktrace.NewError("Failed getting service usage report %v", resp)
+		return nil, stacktrace.NewError("Failed getting task usage report %v", resp)
 	}
 	return target, nil
 }
