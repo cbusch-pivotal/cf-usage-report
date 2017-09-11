@@ -63,7 +63,6 @@ func ServiceUsageReport(c echo.Context) error {
 
 // GetServiceUsageReport pulls the entire report together
 func GetServiceUsageReport(client *cfclient.Client, year int, month int) (*ServiceUsage, error) {
-	//if month > 12 || month < 1 {
 	if !(month >= 1 && month <= 12) {
 		return nil, stacktrace.NewError("Month must be between 1-12")
 	}

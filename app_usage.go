@@ -56,7 +56,6 @@ func AppUsageReport(c echo.Context) error {
 
 // GetAppUsageReport pulls the entire report together
 func GetAppUsageReport(client *cfclient.Client, year int, month int) (*AppUsage, error) {
-	//if month > 12 || month < 1 {
 	if !(month >= 1 && month <= 12) {
 		return nil, stacktrace.NewError("Month must be between 1-12")
 	}
@@ -65,7 +64,6 @@ func GetAppUsageReport(client *cfclient.Client, year int, month int) (*AppUsage,
 	if err != nil {
 		return nil, stacktrace.Propagate(err, "Failed getting list of orgs using client: %v", client)
 	}
-	//fmt.Println("Org count", len(orgs))
 
 	report := AppUsage{}
 	token, err := client.GetToken()

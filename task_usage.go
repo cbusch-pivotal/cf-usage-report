@@ -24,15 +24,19 @@ type OrgTaskUsage struct {
 	OrgName          string    `json:"organization_name"`
 	PeriodStart      time.Time `json:"period_start"`
 	PeriodEnd        time.Time `json:"period_end"`
-	AppUsages        []struct {
-		SpaceGUID             string `json:"space_guid"`
-		SpaceName             string `json:"space_name"`
-		AppName               string `json:"app_name"`
-		AppGUID               string `json:"app_guid"`
-		InstanceCount         int    `json:"instance_count"`
-		MemoryInMbPerInstance int    `json:"memory_in_mb_per_instance"`
-		DurationInSeconds     int    `json:"duration_in_seconds"`
-	} `json:"service_usages"`
+	Spaces           []struct {
+		SpaceGUID struct {
+			SpaceName     string `json:"space_name"`
+			TaskSummaries []struct {
+				ParentApplicationGUID              string `json:"parent_application_guid"`
+				ParentApplicationName              string `json:"parent_application_name"`
+				MemoryInMbPerInstance              int    `json:"memory_in_mb_per_instance"`
+				TaskCountForRange                  int    `json:"task_count_for_range"`
+				TotalDurationInSecondsForRange     int    `json:"total_duration_in_seconds_for_range"`
+				MaxConcurrentTaskCountForParentApp int    `json:"max_concurrent_task_count_for_parent_app"`
+			} `json:"task_summaries"`
+		} `json:"space_guid"`
+	} `json:"spaces"`
 }
 
 // TaskUsageReport handles the app-usage call validating the date
@@ -58,7 +62,6 @@ func TaskUsageReport(c echo.Context) error {
 
 // GetTaskUsageReport pulls the entire report together
 func GetTaskUsageReport(client *cfclient.Client, year int, month int) (*TaskUsage, error) {
-	//if month > 12 || month < 1 {
 	if !(month >= 1 && month <= 12) {
 		return nil, stacktrace.NewError("Month must be between 1-12")
 	}
