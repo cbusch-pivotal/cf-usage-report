@@ -79,9 +79,7 @@ env:
 
 ## Service Installation
 ### Build
-There is no need to build the go project prior to pushing to Cloud Foundry. The go_buildpack will build the go executable as a Linux executable with all needed dependencies.
-
-`GOOS=linux GOARCH=amd64 go build`
+There is no need to build the go project prior to pushing to Cloud Foundry. The go_buildpack will build the go executable as a Linux executable with all needed dependencies, i.e. `GOOS=linux GOARCH=amd64 go build`
 
 ### Push
 Push the executable to PCF with the following command while logged into PCF as a system administrator capable of adding applications to the system org, apptio space.
