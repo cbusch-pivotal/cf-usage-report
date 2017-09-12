@@ -50,7 +50,7 @@ func main() {
 	// register xxx-usage/YYYY/MM endpoints
 	e.GET("/app-usage/:year/:month", AppUsageReport)
 	e.GET("/service-usage/:year/:month", ServiceUsageReport)
-	e.GET("/task-usage/:year/:month", TaskUsageReport)
+	//e.GET("/task-usage/:year/:month", TaskUsageReport)
 
 	// confirm basic auth
 	userBasic := os.Getenv("BASIC_USERNAME")
