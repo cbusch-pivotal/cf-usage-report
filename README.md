@@ -27,10 +27,24 @@ Create the Apptio auditor user.
 uaac user add $AUDIT_USER -p $AUDIT_PWD --emails $AUDIT_EMAIL
 ```
 
-Final, give the Apptio auditor the proper scopes: `usage_service.audit` (definitely) and `cloud_controller.auditor` (maybe, but give it a try).
+Add the `usage_service.audit` group, which is evaluated for audit access on the auditor user by the `app-usage.<sysdomain>` service used by `cf-usage-report` services.
 ```
-uaac member add cloud_controller.auditor $AUDIT_USER
+uaac group add usage_service.audit
+```
+
+Next, give the Apptio auditor the proper scopes (group) `usage_service.audit`.
+```
 uaac member add usage_service.audit $AUDIT_USER
+```
+
+If the Apptio auditor is going to only access specific orgs, then set the auditor as `OrgManager` for each org.
+```
+cf set-org-role $AUDIT_USER <ORGANIZATION> OrgManager
+```
+
+For the auditor to access the `system` org and to retrieve reports from all orgs whether or not the auditor has been added as an `OrgManager` to each org, the `cloud_controller.admin` scope must be set.
+```
+uaac member add cloud_controller.admin $AUDIT_USER
 ```
 
 ## Org and Space for Service
