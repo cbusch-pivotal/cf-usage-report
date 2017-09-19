@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -25,7 +26,7 @@ type OrgTaskUsage struct {
 	PeriodStart      time.Time `json:"period_start"`
 	PeriodEnd        time.Time `json:"period_end"`
 	Spaces           []struct {
-		SpaceGUID struct {
+		SpaceGUID []struct {
 			SpaceName     string `json:"space_name"`
 			TaskSummaries []struct {
 				ParentApplicationGUID              string `json:"parent_application_guid"`
@@ -95,6 +96,9 @@ func GetTaskUsageForOrg(token string, org cfclient.Org, year int, month int) (*O
 	usageAPI := os.Getenv("CF_USAGE_API")
 	target := &OrgTaskUsage{}
 	request := gorequest.New()
+
+	fmt.Println(usageAPI + "/organizations/" + org.Guid + "/task_usages?" + GenTimeParams(year, month))
+
 	resp, _, err := request.Get(usageAPI+"/organizations/"+org.Guid+"/task_usages?"+GenTimeParams(year, month)).
 		Set("Authorization", token).TLSClientConfig(&tls.Config{InsecureSkipVerify: cfSkipSsl}).
 		EndStruct(&target)
