@@ -11,13 +11,15 @@ AUDIT_EMAIL="apptiopcfauditor@company.com"
 uaac target uaa.system.mypcf.net --skip-ssl-validation
 
 # Note: insert token after '-s' from Elastic Runtime tile -> Credentials tab -> UAA / Admin Client Credentials
-#uaac token client get admin -s <UAA ADMIN CLIENT PASSWORD>
+# uaac token client get admin -s <UAA ADMIN CLIENT PASSWORD>
 uaac token client get admin -s Jt5YRvF8VQWH2laqo_W159gsX--KveZ8
-#uaac token client get usage_service -s U_AIZXItMXurjHvMT0WIl52X2365WyqZ
 
 # create audit user
 uaac user add $AUDIT_USER -p $AUDIT_PWD --emails $AUDIT_EMAIL
-uaac member add cloud_controller.admin $AUDIT_USER
-#uaac member add cloud_controller.global_auditor $AUDIT_USER
-#uaac member add usage_service.audit $AUDIT_USER
-#uaac member add cloud_controller.admin_read_only $AUDIT_USER
+
+# set if auditing specific orgs - and set OrgManager for $AUDIT_USER on each org
+uaac group add usage_service.audit
+uaac member add usage_service.audit $AUDIT_USER
+
+# set if wanting system org and all orgs whether or not OrgManager role is set for $AUDIT_USER
+#uaac member add cloud_controller.admin $AUDIT_USER
