@@ -69,7 +69,7 @@ Apptio Usage performs roughly the following function, adding to the normal outpu
 ## Service Configuration
 
 ### About manifest.yml
-Change the `<SYSTEM-DOMAIN>` per the foundation in which the app is being deployed in the `CF_USAGE_API` and `CF_API` environment variables. These two variable could be set from within the pipeline script and removed from the `manifest.yml` to make them easier to change per foundation.
+Change the `<SYSTEM-DOMAIN>` per the foundation in which the app is being deployed in the `CF_USAGE_API` and `CF_API` environment variables. These two variable could be set from within a pipeline script and removed from the `manifest.yml` to make them easier to change per foundation.
 
 Change the `CF_USERNAME` and `CF_PASSWORD` to make the Apptio Auditor user credentials set above.
 
