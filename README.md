@@ -69,11 +69,11 @@ Apptio Usage performs roughly the following function, adding to the normal outpu
 ## Service Configuration
 
 ### About manifest.yml
-Change the “system-domain” per the foundation in which the app is being deployed. The environment application variables `CF_USAGE_API` and `CF_API` could be set from within the pipeline script and removed from the `manifest.yml` to make it easier to set.
+Change the `<SYSTEM-DOMAIN>` per the foundation in which the app is being deployed in the `CF_USAGE_API` and `CF_API` environment variables. These two variable could be set from within the pipeline script and removed from the `manifest.yml` to make them easier to change per foundation.
 
-Change the `CF_USERNAME` and `CF_PASSWORD` to make the Apptio Auditor credentials.
+Change the `CF_USERNAME` and `CF_PASSWORD` to make the Apptio Auditor user credentials set above.
 
-Finally, the `BASIC_USERNAME` and `BASIC_PASSWORD` variables can be changed to basic authentication used in the Apptio DataLink call to the service. For example: `http://basic:basic@cf-usage-report.apps.mypcf.net/app-usage/2017/08`
+Finally, the `BASIC_USERNAME` and `BASIC_PASSWORD` variables should be changed to provide basic user authentication from its consumer call, e.g. the Apptio DataLink call to the service. For example: `http://basic:basic@cf-usage-report.apps.mypcf.net/app-usage/2017/08`
 
 ### File contents for manifest.yml
 ```
@@ -88,7 +88,7 @@ env:
   CF_PASSWORD: Appt10intX17
   BASIC_USERNAME: basic
   BASIC_PASSWORD: basic
-  GOPACKAGENAME: github.com/pivotalservices/cf-usage-report
+  GOPACKAGENAME: github.com/cbusch-pivotal/cf-usage-report
 ```
 
 ## Service Installation
