@@ -5,6 +5,7 @@ env:
   CF_USAGE_API: https://app-usage.system.mypcf.net
   CF_API: https://api.system.mypcf.net
   CF_SKIP_SSL_VALIDATION: true
+  # Uncomment user/password if pushing app yourself and not the tile
   # CF_ADMIN_USER: apptio-pcf-auditor
   # CF_ADMIN_PASSWORD: Appt10intX17
   BASIC_USERNAME: basic
