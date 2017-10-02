@@ -22,8 +22,10 @@ var cfSkipSsl bool
 func main() {
 	// save environment variables
 	cfAPI = os.Getenv("CF_API")
-	cfUser = os.Getenv("CF_USERNAME")
-	cfPassword = os.Getenv("CF_PASSWORD")
+	// cfUser = os.Getenv("CF_USERNAME")
+	// cfPassword = os.Getenv("CF_PASSWORD")
+	cfUser = os.Getenv("CF_ADMIN_USER")
+	cfPassword = os.Getenv("CF_ADMIN_PASSWORD")
 	cfSkipSsl = os.Getenv("CF_SKIP_SSL_VALIDATION") == "true"
 
 	// make sure no env variable is empty
