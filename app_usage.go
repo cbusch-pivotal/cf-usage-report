@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -51,6 +52,14 @@ func AppUsageReport(c echo.Context) error {
 	if err != nil {
 		return stacktrace.Propagate(err, "Couldn't get usage report")
 	}
+
+	apptioreport, err := GetOutputForApptio(usageReport)
+	if err != nil {
+		return stacktrace.Propagate(err, "Couldn't get usage report")
+	}
+
+	fmt.Printf("%+v\n>>>>", apptioreport)
+
 	return c.JSON(http.StatusOK, usageReport)
 }
 
