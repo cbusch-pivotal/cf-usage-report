@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -36,6 +35,26 @@ type OrgAppUsage struct {
 	} `json:"app_usages"`
 }
 
+// ApptioOrgAppUsage flattened data for apptio usage
+type ApptioOrgAppUsage struct {
+	ApptioAppUsages []ApptioAppUsages `json:"app_usages"`
+}
+
+// ApptioAppUsages flattened data for apptio usage
+type ApptioAppUsages struct {
+	OrganizationGUID      string    `json:"organization_guid"`
+	OrgName               string    `json:"organization_name"`
+	PeriodStart           time.Time `json:"period_start"`
+	PeriodEnd             time.Time `json:"period_end"`
+	SpaceGUID             string    `json:"space_guid"`
+	SpaceName             string    `json:"space_name"`
+	AppName               string    `json:"app_name"`
+	AppGUID               string    `json:"app_guid"`
+	InstanceCount         int       `json:"instance_count"`
+	MemoryInMbPerInstance int       `json:"memory_in_mb_per_instance"`
+	DurationInSeconds     int       `json:"duration_in_seconds"`
+}
+
 // AppUsageReport handles the app-usage call validating the date
 //  and executing the report creation
 func AppUsageReport(c echo.Context) error {
@@ -58,9 +77,7 @@ func AppUsageReport(c echo.Context) error {
 		return stacktrace.Propagate(err, "Couldn't get usage report")
 	}
 
-	fmt.Printf("%+v\n>>>>", apptioreport)
-
-	return c.JSON(http.StatusOK, usageReport)
+	return c.JSON(http.StatusOK, apptioreport)
 }
 
 // GetAppUsageReport pulls the entire report together
@@ -110,4 +127,39 @@ func GetAppUsageForOrg(token string, org cfclient.Org, year int, month int) (*Or
 		return nil, stacktrace.NewError("Failed getting app usage report %v", resp)
 	}
 	return target, nil
+}
+
+//GetOutputForApptio convert formatting to support apptio output
+func GetOutputForApptio(usageReport *AppUsage) (ApptioOrgAppUsage, error) {
+
+	var apptioOrg ApptioOrgAppUsage
+
+	apptioOrg.ApptioAppUsages = make([]ApptioAppUsages, len(usageReport.Orgs))
+
+	for _, orgs := range usageReport.Orgs {
+
+		for _, app := range orgs.AppUsages {
+
+			appusage := ApptioAppUsages{
+				OrganizationGUID:      orgs.OrganizationGUID,
+				PeriodStart:           orgs.PeriodStart,
+				PeriodEnd:             orgs.PeriodEnd,
+				SpaceGUID:             app.SpaceGUID,
+				SpaceName:             app.SpaceName,
+				AppName:               app.AppName,
+				AppGUID:               app.AppGUID,
+				InstanceCount:         app.InstanceCount,
+				MemoryInMbPerInstance: app.MemoryInMbPerInstance,
+				DurationInSeconds:     app.DurationInSeconds,
+			}
+
+			apptioOrg.ApptioAppUsages = append(apptioOrg.ApptioAppUsages, appusage)
+		}
+
+	}
+
+	apptioreport := ApptioOrgAppUsage{}
+
+	return apptioreport, nil
+
 }
