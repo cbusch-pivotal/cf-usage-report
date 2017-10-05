@@ -58,6 +58,7 @@ type ApptioAppUsages struct {
 // AppUsageReport handles the app-usage call validating the date
 //  and executing the report creation
 func AppUsageReport(c echo.Context) error {
+
 	year, err := strconv.Atoi(c.Param("year"))
 	if err != nil {
 		return stacktrace.Propagate(err, "couldn't convert year to number")
@@ -134,14 +135,11 @@ func GetOutputForApptio(usageReport *AppUsage) (ApptioOrgAppUsage, error) {
 
 	var apptioOrg ApptioOrgAppUsage
 
-	apptioOrg.ApptioAppUsages = make([]ApptioAppUsages, len(usageReport.Orgs))
-
 	for _, orgs := range usageReport.Orgs {
-
 		for _, app := range orgs.AppUsages {
-
 			appusage := ApptioAppUsages{
 				OrganizationGUID:      orgs.OrganizationGUID,
+				OrgName:               orgs.OrgName,
 				PeriodStart:           orgs.PeriodStart,
 				PeriodEnd:             orgs.PeriodEnd,
 				SpaceGUID:             app.SpaceGUID,
@@ -152,14 +150,10 @@ func GetOutputForApptio(usageReport *AppUsage) (ApptioOrgAppUsage, error) {
 				MemoryInMbPerInstance: app.MemoryInMbPerInstance,
 				DurationInSeconds:     app.DurationInSeconds,
 			}
-
 			apptioOrg.ApptioAppUsages = append(apptioOrg.ApptioAppUsages, appusage)
 		}
 
 	}
-
-	apptioreport := ApptioOrgAppUsage{}
-
-	return apptioreport, nil
+	return apptioOrg, nil
 
 }
