@@ -1,2 +1,2 @@
-# See cf-orgs-usage at https://github.com/cbusch-pivotal/cf-orgs-usage
-This version has been removed for a renamed version of the repo
+# Repo contents removed
+See https://github.com/cbusch-pivotal/cf-orgs-usage for renamed and updated version of the app
